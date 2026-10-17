@@ -1,0 +1,24 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>長塩治療院｜LINE予約希望</title><script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script><style>body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans JP',sans-serif;background:#f6f7f6;color:#202520;margin:0;padding:22px}.panel{max-width:440px;margin:35px auto;background:white;border-radius:18px;padding:26px;box-shadow:0 5px 20px #0001}h1{font-size:23px}label{display:block;margin-top:18px;font-weight:600}input{box-sizing:border-box;width:100%;padding:13px;font-size:17px;border:1px solid #ccc;border-radius:8px;margin-top:6px}button{width:100%;margin-top:25px;background:#06c755;color:white;border:0;border-radius:9px;padding:16px;font-size:17px;font-weight:700}button:disabled{opacity:.5}small{color:#666;line-height:1.7}#status{margin-top:15px;white-space:pre-wrap}</style></head><body><div class="panel"><h1>長塩治療院｜予約希望</h1><p>ご希望の日時を確認し、送信してください。</p><label>希望日時<input id="slot" readonly></label><label>お名前<input id="name" placeholder="お名前を入力"></label><button id="send">LINEで予約希望を送る</button><p id="status" role="status"></p><small>送信は予約確定ではありません。治療院からの返信をお待ちください。<br>LINE公式アカウントとのトーク内で開いてご利用ください。</small></div><script>
+// LIFF IDを取得後、以下を書き換えてください。
+const LIFF_ID = 'ここにLIFF_IDを入力';
+const params = new URLSearchParams(location.search);
+const date = params.get('date') || '10月20日（火）';
+const time = params.get('time') || '19:15';
+const slot = document.getElementById('slot');slot.value = `${date} ${time}`;
+const status = document.getElementById('status');
+const button = document.getElementById('send');
+button.onclick = async () => {
+ const name = document.getElementById('name').value.trim();
+ if(!name){status.textContent='お名前を入力してください。';return;}
+ if(LIFF_ID.includes('ここに')){status.textContent='管理者によるLINE接続設定がまだ完了していません。';return;}
+ button.disabled=true;status.textContent='LINEを確認しています…';
+ try{
+  await liff.init({liffId:LIFF_ID});
+  if(!liff.isLoggedIn()){liff.login({redirectUri:location.href});return;}
+  if(!liff.isInClient()){status.textContent='LINE公式アカウントのトーク内から予約ページを開いてください。';return;}
+  await liff.sendMessages([{type:'text',text:`【予約希望】\n希望日時：${slot.value}\nお名前：${name}\n※予約確定ではありません`}]);
+  status.textContent='予約希望を送信しました。治療院からの返信をお待ちください。';
+ }catch(e){status.textContent='送信できませんでした。LINE公式アカウントのトーク内から開き直してください。\n'+(e.message||'');}
+ finally{button.disabled=false;}
+};
+</script></body></html>
